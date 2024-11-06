@@ -1,3 +1,5 @@
+#Функции
+
 import asyncio
 import logging
 import random

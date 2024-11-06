@@ -1,6 +1,10 @@
+#Основной файл бота
+
 import asyncio
 import logging
 import random
+from gc import callbacks
+from random import setstate
 from tabnanny import check
 from datetime import date
 from aiogram import Bot, Dispatcher, types, F
@@ -15,6 +19,11 @@ import counters
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 import KB
 import func
+from aiogram.types import CallbackQuery
+
+
+class logic(StatesGroup):
+    start_sleep = State()
 
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -25,14 +34,16 @@ bot = Bot(token="8013896759:AAHPykvXHc2i7rFIwzh55FU22nxFx1xuXpM")
 check_project = 0
 dp = Dispatcher()
 @dp.message(Command("start"))
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message, state: FSMContext):
+    await state.set_state(logic.start_sleep)
     kb = [
         [types.KeyboardButton(text="Создать новый проект")],
         [types.KeyboardButton(text="Выбрать проект для работы")]
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb)
     await message.answer("Привет я бот Project Manager.")
-    await message.answer("что вы хотите сделать?", reply_markup=keyboard)
+    await message.answer("Что вы хотите сделать?", reply_markup=keyboard)
+
 
 @dp.message(F.text=="Создать новый проект")
 async def project_new(message: types.Message):
@@ -55,6 +66,8 @@ async def project_new(message: types.Message):
 async def project_choice(message: types.Message):
     await message.answer("Выберите номер проекта",  reply_markup=KB.KB_PROJECTS())
 
+@dp.update(F.callback_data == "choice_action")
+async def choice_action(call: CallbackQuery, message: types.Message):
     await message.answer("Что вы хотите сделать?", reply_markup=KB.KB_ACTION_PROJECT())
 
 
